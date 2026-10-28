@@ -1,0 +1,38 @@
+id: rayfin-football
+name: Rayfin Football Match Centre
+version: 0.1.0
+services:
+  auth:
+    enabled: true
+    fabric:
+      enabled: true
+    allowedRedirectUris:
+      - http://localhost:5173
+      - http://127.0.0.1:5173
+  data:
+    enabled: true
+    dialect: mssql
+  storage:
+    enabled: false
+  functions:
+    enabled: false
+  staticHosting:
+    enabled: true
+    folder: dist
+    buildCommand: npm run build:fabric
+    indexDocument: index.html
+connectors:
+  # Server-side transport to the DirectQuery semantic model over the Eventhouse.
+  # workspaceId / itemId are written by fabric/deploy/06_configure_app.py. Delete this block to skip it:
+  # embedded in the Fabric portal the app uses the host bridge, standalone it falls back to
+  # the Power BI REST API (see src/services/daxGateway.ts).
+  matchModel:
+    connector: fabric-semanticmodel
+    version: "1"
+    auth:
+      type: delegated
+    config:
+      workspaceId: 00000000-0000-0000-0000-000000000000
+      itemId: 00000000-0000-0000-0000-000000000000
+    operations:
+      - name: executeQuery

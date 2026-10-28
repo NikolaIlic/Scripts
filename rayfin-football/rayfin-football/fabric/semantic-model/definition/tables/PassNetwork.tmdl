@@ -1,0 +1,91 @@
+table PassNetwork
+
+	column team
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: team
+
+		annotation SummarizationSetBy = User
+
+	column player
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: player
+
+		annotation SummarizationSetBy = User
+
+	column recipient
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: recipient
+
+		annotation SummarizationSetBy = User
+
+	column passes
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: passes
+
+		annotation SummarizationSetBy = User
+
+	column avg_length
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: avg_length
+
+		annotation SummarizationSetBy = User
+
+	column from_x
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: from_x
+
+		annotation SummarizationSetBy = User
+
+	column from_y
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: from_y
+
+		annotation SummarizationSetBy = User
+
+	column from_touches
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: from_touches
+
+		annotation SummarizationSetBy = User
+
+	column to_x
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: to_x
+
+		annotation SummarizationSetBy = User
+
+	column to_y
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: to_y
+
+		annotation SummarizationSetBy = User
+
+	partition PassNetwork = m
+		mode: directQuery
+		source =
+				let
+				    Source = AzureDataExplorer.Contents("https://<eventhouse>.kusto.fabric.microsoft.com", "00000000-0000-0000-0000-000000000000", "PassNetwork(" & Number.ToText(Match_Id) & ")", [MaxRows=null, MaxSize=null, NoTruncate=null, AdditionalSetStatements=null])
+				in
+				    Source

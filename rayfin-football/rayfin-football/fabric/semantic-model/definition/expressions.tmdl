@@ -1,0 +1,5 @@
+expression Match_Id = 69299 meta [IsParameterQuery=true, Type="Number", IsParameterQueryRequired=true]
+	parameterValuesColumn: Matches.match_id
+
+	annotation PBI_ResultType = Number
+

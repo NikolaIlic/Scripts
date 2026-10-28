@@ -1,0 +1,36 @@
+id: rayfin-football
+name: Rayfin Football Match Centre
+version: 0.1.0
+services:
+  auth:
+    enabled: true
+    fabric:
+      enabled: true
+    allowedRedirectUris:
+      - http://localhost:5173
+      - http://127.0.0.1:5173
+      - https://close-fog-0a7a952493-westeurope.webapp.fabricapps.net
+  data:
+    enabled: true
+    dialect: mssql
+  storage:
+    enabled: false
+  functions:
+    enabled: false
+  staticHosting:
+    enabled: true
+    folder: dist
+    buildCommand: npm run build:fabric
+    indexDocument: index.html
+    assetAccess: protected
+connectors:
+  matchModel:
+    connector: fabric-semanticmodel
+    version: "1"
+    auth:
+      type: delegated
+    config:
+      workspaceId: 634ae5d0-ab9a-4462-bc5e-dfeb2c732588
+      itemId: c29ef3af-2f31-4a4f-a53f-18cb56721686
+    operations:
+      - name: executeQuery

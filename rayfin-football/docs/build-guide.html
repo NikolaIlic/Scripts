@@ -1,0 +1,333 @@
+<title>Rayfin Football Build Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: single reading column, numbered match-day steps with a sticky stage rail at the top */
+  :root {
+    --bg: #f7f6f2;
+    --fg: #1c1f24;
+    --muted: #5d6470;
+    --line: #d9d7cf;
+    --panel: #ffffff;
+    --code-bg: #15181d;
+    --code-fg: #e6e9ee;
+    --accent: #a50044;
+    --accent-2: #0f6b3a;
+    --warn: #b7791f;
+    --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+    --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101216; --fg: #e8e9ec; --muted: #9aa1ad; --line: #2a2f38; --panel: #171a20;
+      --code-bg: #0a0c0f; --code-fg: #dfe3ea; --accent: #ff4f8b; --accent-2: #4fcf85; --warn: #e2b04a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101216; --fg: #e8e9ec; --muted: #9aa1ad; --line: #2a2f38; --panel: #171a20;
+    --code-bg: #0a0c0f; --code-fg: #dfe3ea; --accent: #ff4f8b; --accent-2: #4fcf85; --warn: #e2b04a;
+    color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+         padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header { padding-block: 40px 24px; border-bottom: 2px solid var(--accent); margin-bottom: 8px; }
+  .eyebrow { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-size: 14px; font-weight: 700; }
+  h1 { font-family: var(--font-display); font-size: clamp(36px, 7vw, 56px); line-height: 1; margin: 6px 0 12px; text-wrap: balance; font-weight: 700; }
+  header p { color: var(--muted); max-width: 60ch; margin: 0; }
+  nav.rail { display: flex; gap: 6px; flex-wrap: wrap; padding-block: 16px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
+  nav.rail a { font-family: var(--font-display); font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: none; color: var(--fg);
+               border: 1px solid var(--line); padding: 4px 10px; border-radius: 3px; }
+  nav.rail a:hover, nav.rail a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+  section { margin-bottom: 44px; }
+  h2 { font-family: var(--font-display); font-size: 30px; line-height: 1.05; margin: 0 0 4px; display: flex; gap: 12px; align-items: baseline; text-wrap: balance; }
+  h2 .n { color: var(--accent); font-size: 22px; min-width: 2ch; font-variant-numeric: tabular-nums; }
+  h3 { font-family: var(--font-display); font-size: 20px; margin: 22px 0 6px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .time { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+  p { max-width: 68ch; }
+  ol, ul { padding-left: 22px; max-width: 68ch; }
+  li { margin-bottom: 6px; }
+  li > ul { margin-top: 4px; }
+  code { font-family: var(--font-mono); font-size: 0.88em; background: color-mix(in srgb, var(--fg) 8%, transparent); padding: 1px 5px; border-radius: 3px; }
+  pre { background: var(--code-bg); color: var(--code-fg); font-family: var(--font-mono); font-size: 13px; line-height: 1.5;
+        padding: 14px 16px; border-radius: 4px; overflow-x: auto; margin: 10px 0 16px; }
+  pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+  .check { border-left: 3px solid var(--accent-2); background: var(--panel); padding: 10px 14px; margin: 14px 0; max-width: 68ch; }
+  .check b { color: var(--accent-2); font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; font-size: 14px; }
+  .note { border-left: 3px solid var(--warn); background: var(--panel); padding: 10px 14px; margin: 14px 0; max-width: 68ch; }
+  .note b { color: var(--warn); font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; font-size: 14px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0 16px; }
+  .tbl { overflow-x: auto; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; font-size: 13px; color: var(--muted); }
+  td:first-child { font-family: var(--font-mono); font-size: 13px; white-space: nowrap; }
+  .flow { font-family: var(--font-mono); font-size: 13px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; overflow-x: auto; white-space: pre; margin: 10px 0 20px; }
+  footer { border-top: 1px solid var(--line); padding-top: 16px; color: var(--muted); font-size: 14px; }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Fabric app build guide</div>
+  <h1>Rayfin football match centre</h1>
+  <p>From empty workspace to a live replay of Barcelona 5-0 Real Madrid streaming through Eventstream, Eventhouse and a Rayfin app with predictions. Budget about two hours the first time; most of it is waiting for Fabric items to provision.</p>
+</header>
+
+<nav class="rail" aria-label="Steps">
+  <a href="#s0">Prereqs</a><a href="#s1">Workspace</a><a href="#s2">Eventhouse</a><a href="#s3">Eventstream</a><a href="#s4">Replay</a><a href="#s5">Model</a><a href="#s6">App</a><a href="#s7">Deploy</a><a href="#s8">Demo</a><a href="#s9">Troubleshooting</a>
+</nav>
+
+<section id="s0">
+  <h2><span class="n">0</span>What you are building</h2>
+<div class="flow">replay_match.py ──▶ Eventstream (custom endpoint)
+                      │
+                      ▼
+          Eventhouse: raw_events ──update policy──▶ match_events
+                                                      │
+                            KQL functions: Scoreline, XgRace, Momentum,
+                            ShotMap, PassNetwork, PlayerStats, KeyMoments
+                                                      │
+                            DirectQuery semantic model (M parameter Match_Id)
+                                                      │
+          Rayfin app (React) ◀── DAX via host bridge / connector / Power BI REST
+                 │
+          Rayfin data service: Prediction, ScoutingNote, WatchedMatch</div>
+
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>A Fabric workspace on a capacity (F2 trial is enough) where you are Admin or Member.</li>
+    <li>Tenant setting <strong>Fabric Apps</strong> enabled by a Fabric admin (Admin portal → Tenant settings → search "Fabric App"). Without this <code>rayfin up</code> fails at item creation.</li>
+    <li>Node.js 20 or later and npm on your machine. Check with <code>node -v</code>.</li>
+    <li>Python 3.10 or later for the replay producer.</li>
+    <li>The repo <code>rayfin-football</code> unpacked locally. All paths below are relative to its root.</li>
+    <li>Optional: Power BI Desktop, which makes the semantic model step faster than the web editor.</li>
+  </ul>
+</section>
+
+<section id="s1">
+  <h2><span class="n">1</span>Workspace and naming</h2>
+  <p class="time">5 minutes</p>
+  <ol>
+    <li>Create or pick a workspace. Suggested name: <code>Football Match Centre</code>. Keep everything in one workspace; the Rayfin connector and the semantic model both resolve items by workspace id.</li>
+    <li>Note the workspace id from the URL: <code>app.fabric.microsoft.com/groups/&lt;workspace-id&gt;/...</code>. You will paste it in steps 5 and 6.</li>
+    <li>Decide item names now so the rest of the guide reads literally:
+      <ul>
+        <li>Eventhouse <code>Football_EH</code>, KQL database <code>Football_DB</code></li>
+        <li>Eventstream <code>ES_MatchEvents</code></li>
+        <li>Semantic model <code>Football_Model</code></li>
+        <li>Fabric App <code>rayfin-football</code> (comes from <code>rayfin/rayfin.yml</code>)</li>
+      </ul>
+    </li>
+  </ol>
+</section>
+
+<section id="s2">
+  <h2><span class="n">2</span>Eventhouse and KQL schema</h2>
+  <p class="time">10 minutes</p>
+  <ol>
+    <li>In the workspace, <strong>New item → Eventhouse</strong>, name <code>Football_EH</code>. It creates a KQL database of the same name; rename it to <code>Football_DB</code> or keep the default and adjust names later.</li>
+    <li>Open the KQL database and copy the <strong>Query URI</strong> from the database details pane (looks like <code>https://xxxx.z1.kusto.fabric.microsoft.com</code>). Also note the <strong>database id</strong> (the GUID in the URL).</li>
+    <li>Open a KQL queryset on the database. Paste the whole of <code>fabric/eventhouse/DatabaseSchema.kql</code>, put the cursor anywhere inside the <code>.execute database script</code> block and press <strong>Run</strong>. The queryset runs only the block under the cursor, so the file is written as one command that runs everything in order. The result grid shows one row per command; every row should read <code>Completed</code>.</li>
+    <li>The script uses <code>.create-merge</code> and <code>.create-or-alter</code>, so it is safe to re-run. If an earlier attempt left a half-built <code>match_events</code> table, run <code>.drop table match_events ifexists</code> first.</li>
+  </ol>
+  <div class="check"><b>Check</b><br>
+    <code>.show functions</code> lists Parse_Match_Events, Scoreline, XgRace, Momentum, ShotMap, PassNetwork, PlayerStats, KeyMoments.<br>
+    <code>.show table match_events policy update</code> shows <code>IsEnabled: true</code> with source <code>raw_events</code>.<br>
+    <code>.show table raw_events ingestion json mappings</code> shows <code>raw_events_mapping</code>.
+  </div>
+  <div class="note"><b>Why two tables</b><br>
+    Eventstream lands the full JSON object in <code>raw_events.content</code>. The update policy flattens it into typed columns in <code>match_events</code> on ingestion, so every query runs against real types with no <code>tostring()</code> noise. This is the same pattern the Helsinki transport template uses.</div>
+</section>
+
+<section id="s3">
+  <h2><span class="n">3</span>Eventstream</h2>
+  <p class="time">10 minutes</p>
+  <ol>
+    <li><strong>New item → Eventstream</strong>, name <code>ES_MatchEvents</code>. Open it in edit mode.</li>
+    <li><strong>Add source → Custom endpoint</strong>. Name it <code>MatchEvents_Source</code>. Leave defaults.</li>
+    <li><strong>Add destination → Eventhouse</strong>:
+      <ul>
+        <li>Data ingestion mode: <strong>Direct ingestion</strong>. The other mode infers a fixed schema from the stream and flags a schema mismatch on the nested <code>content</code> object.</li>
+        <li>Workspace: yours. Eventhouse: <code>Football_EH</code>. KQL database: <code>Football_DB</code></li>
+        <li>Click <strong>Save</strong>. Table and mapping are set in the Eventhouse afterwards (step 6 below).</li>
+      </ul>
+    </li>
+    <li><strong>Publish</strong> the Eventstream. Wait until the status reads Active (one to three minutes).</li>
+    <li>Select the custom endpoint source → <strong>Keys</strong> tab → copy <strong>Connection string-primary key</strong>. It already contains <code>EntityPath=…</code>, which is the event hub name; nothing else is needed.</li>
+    <li>Send 20 sample events so the next step has data to preview (setup in step 4): <code>python ingest/replay_match.py --events ingest/data/events_69299.json --no-wait --limit 20</code></li>
+    <li>On the Eventhouse destination tile click <strong>Configure</strong>. In the Get data wizard: <strong>Existing table</strong> → <code>raw_events</code>, format <strong>JSON</strong>, <strong>Advanced</strong> → <strong>Use existing mapping</strong> → <code>raw_events_mapping</code>. Finish.</li>
+    <li>Cut the ingestion batching window from the default five minutes to ten seconds, otherwise the app lags minutes behind the replay: <code>.alter table raw_events policy ingestionbatching '{"MaximumBatchingTimeSpan":"00:00:10","MaximumNumberOfItems":500,"MaximumRawDataSizeMB":100}'</code></li>
+    <li>A new data connection only picks up events sent after it was created, so send the 20 test events again now. After about 30 seconds check <code>raw_events | count</code> and <code>match_events | count</code>; both should be 20. Then clear the test rows: <code>.clear table raw_events data</code> and <code>.clear table match_events data</code>.</li>
+  </ol>
+  <div class="check"><b>Check</b><br>
+    The Eventstream canvas shows source → stream → Eventhouse destination with no warning icons. The destination tile shows <code>raw_events</code>.
+  </div>
+  <div class="note"><b>Alternative</b><br>
+    <code>fabric/eventstream/eventstream.json</code> is the same definition with placeholders, ready for the Fabric REST API or Fabric CLI if you prefer to script it. The Helsinki template's <code>fabric/deploy/03_eventstream.py</code> shows the exact API call.</div>
+</section>
+
+<section id="s4">
+  <h2><span class="n">4</span>Replay the match</h2>
+  <p class="time">15 minutes including the first full replay</p>
+  <ol>
+    <li>Install the producer dependency once:
+<pre><code>cd rayfin-football
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r ingest/requirements.txt</code></pre></li>
+    <li>Dry run to see the envelope shape; nothing is sent:
+<pre><code>python ingest/replay_match.py --events ingest/data/events_69299.json --dry-run --limit 20</code></pre>
+      You should see one JSON object per line with <code>match_id</code>, <code>minute</code>, <code>type</code>, <code>team</code>, <code>x</code>, <code>y</code>, and for shots <code>xg</code> and <code>is_goal</code>.</li>
+    <li>Set the connection string from step 3 and backfill the whole match quickly so you have data to build the model against:
+<pre><code>export EVENTSTREAM_CONNECTION_STRING="Endpoint=sb://...;SharedAccessKeyName=...;SharedAccessKey=...;EntityPath=..."
+python ingest/replay_match.py --events ingest/data/events_69299.json --no-wait</code></pre>
+      Expect <code># done: 1565 events</code> within about 30 seconds. The replay streams 1,565 curated events: passes, shots, dribbles, duels, cards, subs. Ball receipts, carries and pressures are filtered out; add <code>--all-types</code> if you want all 3,975.</li>
+    <li>Wait about a minute for ingestion, then verify in the KQL queryset:
+<pre><code>Scoreline(69299)</code></pre></li>
+  </ol>
+  <div class="check"><b>Expected result</b>
+    <div class="tbl"><table>
+      <tr><th>team</th><th>goals</th><th>shots</th><th>xg</th><th>passes</th><th>pass_pct</th></tr>
+      <tr><td>Barcelona</td><td>5</td><td>11</td><td>2.77</td><td>723</td><td>88.1</td></tr>
+      <tr><td>Real Madrid</td><td>0</td><td>6</td><td>0.13</td><td>371</td><td>73.9</td></tr>
+    </table></div>
+    Then run <code>XgRace(69299)</code>, <code>Momentum(69299)</code>, <code>ShotMap(69299)</code>, <code>PassNetwork(69299)</code>, <code>PlayerStats(69299)</code>, <code>KeyMoments(69299)</code>. Each should return rows. <code>Momentum</code> is the one with window logic; if it errors on <code>prev()</code>, replace the window line with a self-join on <code>minute</code> between <code>minute - windowMinutes + 1</code> and <code>minute</code>.
+  </div>
+  <div class="note"><b>Replay speeds</b><br>
+    <code>--speed 10</code> replays 90 minutes in about 9 minutes (stage demo). <code>--speed 50</code> in under 2. <code>--start-minute 45</code> jumps to the second half. To reset between demos run <code>.clear table raw_events data</code> and <code>.clear table match_events data</code> in KQL.</div>
+</section>
+
+<section id="s5">
+  <h2><span class="n">5</span>Semantic model (DirectQuery)</h2>
+  <p class="time">25 minutes</p>
+  <p>The app speaks DAX, not KQL, because the three browser transports (Fabric host bridge, Rayfin connector, Power BI REST) all target a semantic model. The model is seven thin DirectQuery tables, one per KQL function, driven by a single parameter.</p>
+  <ol>
+    <li>Open Power BI Desktop → <strong>Get data → Azure Data Explorer (Kusto)</strong>. Cluster: the Query URI from step 2. Database: <code>Football_DB</code>. Pick <strong>DirectQuery</strong>. Connect with your Fabric account, then cancel the navigator so no table is loaded yet.</li>
+    <li>Open <strong>Transform data</strong> (Power Query). <strong>Manage parameters → New parameter</strong>: name <code>Match_Id</code>, type Decimal Number, current value <code>69299</code>, required.</li>
+    <li>Create a blank query named <code>Scoreline</code> with this M (Advanced Editor), replacing the cluster URL and database GUID:
+<pre><code>let
+    Source = AzureDataExplorer.Contents(
+        "https://xxxx.z1.kusto.fabric.microsoft.com",
+        "00000000-0000-0000-0000-000000000000",
+        "Scoreline(" &amp; Number.ToText(Match_Id) &amp; ")",
+        [MaxRows=null, MaxSize=null, NoTruncate=null, AdditionalSetStatements=null])
+in
+    Source</code></pre></li>
+    <li>Duplicate the query six times, renaming each and changing only the KQL call:
+      <div class="tbl"><table>
+        <tr><th>Query name</th><th>KQL</th></tr>
+        <tr><td>XgRace</td><td><code>"XgRace(" &amp; Number.ToText(Match_Id) &amp; ")"</code></td></tr>
+        <tr><td>Momentum</td><td><code>"Momentum(" &amp; Number.ToText(Match_Id) &amp; ", 5)"</code></td></tr>
+        <tr><td>ShotMap</td><td><code>"ShotMap(" &amp; Number.ToText(Match_Id) &amp; ")"</code></td></tr>
+        <tr><td>PassNetwork</td><td><code>"union (PassNetwork(" &amp; Number.ToText(Match_Id) &amp; ", 'Barcelona') | extend team='Barcelona'), (PassNetwork(" &amp; Number.ToText(Match_Id) &amp; ", 'Real Madrid') | extend team='Real Madrid')"</code></td></tr>
+        <tr><td>PlayerStats</td><td><code>"PlayerStats(" &amp; Number.ToText(Match_Id) &amp; ")"</code></td></tr>
+        <tr><td>KeyMoments</td><td><code>"KeyMoments(" &amp; Number.ToText(Match_Id) &amp; ", 50)"</code></td></tr>
+      </table></div>
+      Close and apply. Confirm every table shows storage mode <strong>DirectQuery</strong> in Model view (hover the table header). An Import table here silently freezes the app.</li>
+    <li>Model view: no relationships are needed. Set <code>minute</code>, <code>x</code>, <code>y</code> and all numeric columns to <strong>Don't summarize</strong> so DAX <code>SELECTCOLUMNS</code> returns raw rows.</li>
+    <li><strong>Publish</strong> to the workspace as <code>Football_Model</code>. In the service, open the model settings → <strong>Data source credentials</strong> and sign in with OAuth2 if prompted.</li>
+    <li>Note the semantic model id from its URL (<code>/datasets/&lt;id&gt;</code>). You need it twice in step 6.</li>
+  </ol>
+  <div class="check"><b>Check</b><br>
+    In the service, open the model → <strong>Explore</strong> (or DAX query view in Desktop) and run:
+<pre><code>DEFINE MPARAMETER 'Match_Id' = 69299
+EVALUATE 'Scoreline'</code></pre>
+    Two rows, matching the table in step 4. If <code>MPARAMETER</code> errors, the parameter was not bound to DirectQuery; recreate it with "required" ticked.
+  </div>
+  <div class="note"><b>Web-only route</b><br>
+    No Desktop? In the KQL database choose <strong>Power BI semantic model</strong> from the ribbon, add the seven functions as tables, then edit each table's M in the web modelling editor to add the parameter. It works but the parameter UI is clumsier.</div>
+</section>
+
+<section id="s6">
+  <h2><span class="n">6</span>Rayfin app: local run</h2>
+  <p class="time">20 minutes</p>
+  <ol>
+    <li>Install and sign in:
+<pre><code>cd rayfin-football
+npm install
+npx rayfin login            # opens a browser; use the account that owns the workspace</code></pre></li>
+    <li>Provision the app in your workspace once. Without <code>--workspace-id</code> the CLI deploys to "My Workspace". Preview first with <code>--dry-run</code>, then run it for real:
+<pre><code>npx rayfin up --workspace-id &lt;workspace-id&gt; --exclude-services staticHosting --dry-run
+npx rayfin up --workspace-id &lt;workspace-id&gt; --exclude-services staticHosting</code></pre>
+      The first deploy writes the app's Fabric properties to <code>rayfin/.env</code>, which later runs read. If a later <code>npm run dev</code> creates a second app in My Workspace, add <code>--workspace-id</code> to the <code>dev</code> script in <code>package.json</code>.</li>
+    <li>Create the app environment file:
+<pre><code>cp .env.example .env.local.overrides</code></pre>
+      Fill in:
+      <ul>
+        <li><code>VITE_PBI_DATASET_ID</code> - the semantic model id from step 5. Required on all transports.</li>
+        <li><code>VITE_PBI_CLIENT_ID</code> and <code>VITE_PBI_TENANT_ID</code> - only for running the app standalone in a browser tab (the Power BI REST fallback). Inside the Fabric portal the host bridge is used and these are not needed. To create the app registration: Entra ID → App registrations → New, single-page application, redirect URI <code>http://localhost:5173</code>, API permissions → Power BI Service → delegated <code>Dataset.Read.All</code>.</li>
+      </ul></li>
+    <li>Optional server-side transport: in <code>rayfin/rayfin.yml</code> replace the two zero GUIDs under <code>connectors.matchModel.config</code> with the workspace id and the semantic model id. Leave it if you only run embedded in the portal.</li>
+    <li>Provision auth and data, then start Vite:
+<pre><code>npm run dev</code></pre>
+      This runs <code>rayfin up --exclude-services staticHosting</code> first, which creates the Fabric App item, provisions the SQL database from the three entities in <code>rayfin/data/</code>, publishes the GraphQL API, and writes <code>.env.local</code> with the five <code>VITE_RAYFIN_*</code> and <code>VITE_FABRIC_*</code> values. Then Vite serves on <code>http://localhost:5173</code>.</li>
+    <li>Open the app, click <strong>Sign in with Fabric</strong>. The header shows the Clásico at 0-0 with "waiting for events" until the first query returns, then flips to LIVE with the 5-0 from the backfill.</li>
+  </ol>
+  <div class="check"><b>Check</b><br>
+    Submit a prediction (it will say locked if the match already has events; clear the KQL tables first or temporarily set <code>live</code> to false in <code>App.tsx</code>). Then in the Fabric portal open the app's SQL database and query <code>SELECT * FROM Prediction</code>. Your row is there with <code>user_id</code> set to your Entra object id.
+  </div>
+  <div class="note"><b>Entities</b><br>
+    <code>Prediction</code>: everyone reads, only the owner writes (<code>claims.sub.eq(item.user_id)</code>). <code>ScoutingNote</code>: owner-only on every operation. <code>WatchedMatch</code>: any signed-in user reads and writes, for the demo. Edit a decorator and run <code>npx rayfin up</code> again; schema changes propagate to the database and the typed client.</div>
+</section>
+
+<section id="s7">
+  <h2><span class="n">7</span>Deploy to Fabric</h2>
+  <p class="time">10 minutes</p>
+  <ol>
+    <li>Build and deploy everything including static hosting:
+<pre><code>npx rayfin up</code></pre>
+      The CLI runs <code>npm run build:fabric</code>, uploads <code>dist/</code>, and prints the app URL inside the Fabric portal.</li>
+    <li>Open the Fabric App item in the workspace. It loads the built app with Fabric SSO; no second sign-in, since the host bridge runs DAX as the portal user.</li>
+    <li>If you use the standalone URL as well, add it as an SPA redirect URI on the Entra app registration from step 6, and append it to <code>allowedRedirectUris</code> in <code>rayfin/rayfin.yml</code>, then <code>rayfin up</code> again.</li>
+  </ol>
+  <div class="check"><b>Check</b><br>
+    The LIVE indicator is green and the key moments list shows Jeffrén 90+' at the top. Open the app on a phone: the stat grid collapses to two columns and the shot map stays within the screen.
+  </div>
+</section>
+
+<section id="s8">
+  <h2><span class="n">8</span>Run the demo</h2>
+  <p class="time">10 minutes on stage</p>
+  <ol>
+    <li>Before the session: clear both KQL tables, open the Fabric App, confirm 0-0 and the prediction form is open.</li>
+    <li>Ask the room for a score. Submit two or three predictions from different accounts if you have them.</li>
+    <li>Start the replay at 10x in a visible terminal:
+<pre><code>python ingest/replay_match.py --events ingest/data/events_69299.json --speed 10</code></pre></li>
+    <li>Minute 9 (about 55 seconds in): Xavi scores. Header flips, xG race separates, first goal dot on the shot map.</li>
+    <li>Minute 17: Pedro. Switch to the KQL queryset and run <code>PlayerStats(69299) | top 5 by progressive_passes</code> to show Messi and Xavi driving play.</li>
+    <li>Half time comes fast; the producer skips the break. Point out the momentum chart going one-sided.</li>
+    <li>Minutes 54 and 57: Villa twice. Then show the predictions list; nobody picked 5-0.</li>
+    <li>Optional closers: an Activator rule on <code>match_events | where is_goal</code> posting to Teams; a Data Agent over <code>Football_Model</code> asked "who had the most progressive passes in the second half".</li>
+  </ol>
+</section>
+
+<section id="s9">
+  <h2><span class="n">9</span>Troubleshooting</h2>
+  <div class="tbl"><table>
+    <tr><th>Symptom</th><th>Cause and fix</th></tr>
+    <tr><td>raw_events fills, match_events empty</td><td>Update policy not attached or function errors. Run <code>Parse_Match_Events() | take 5</code> directly; fix the column that fails, then re-run the <code>.alter table ... policy update</code> command.</td></tr>
+    <tr><td>Eventstream shows data, KQL shows nothing</td><td>Mapping name mismatch. Either set <code>raw_events_mapping</code> on the destination or drop the mapping and let Eventstream map by name.</td></tr>
+    <tr><td>App shows "waiting for events" forever</td><td>Model table is Import, not DirectQuery, or <code>VITE_PBI_DATASET_ID</code> is wrong. Verify with the DAX check in step 5.</td></tr>
+    <tr><td>"Sign in to Power BI" banner in the portal</td><td>Host bridge not available in this portal build; the app fell back to REST. Fill in client and tenant ids, or use the Rayfin connector in <code>rayfin.yml</code>.</td></tr>
+    <tr><td>ConnectorFunction invocation is not enabled</td><td>The <code>fabric-semanticmodel</code> connector is still gated per workspace. Remove the connector block; the gateway picks the next transport automatically.</td></tr>
+    <tr><td>rayfin up fails creating the Fabric App item</td><td>Tenant setting Fabric Apps is off, or your role in the workspace is Viewer or Contributor.</td></tr>
+    <tr><td>Prediction create returns 403</td><td>The <code>user_id</code> you send does not match the JWT <code>sub</code>. The hook reads it from <code>client.auth.getSession().user.id</code>; make sure the session is live.</td></tr>
+    <tr><td>Momentum() errors</td><td>See step 4. The function uses <code>prev()</code> with an offset; some engine versions want the self-join form.</td></tr>
+    <tr><td>Producer: ServiceBusError or 401</td><td>Connection string copied without <code>EntityPath</code>, or the Eventstream is not yet Active. Re-copy the key after publish.</td></tr>
+  </table></div>
+
+  <h3>What to build next</h3>
+  <ul>
+    <li>Match picker: seed <code>WatchedMatch</code> and read the id from the route instead of the constant in <code>App.tsx</code>.</li>
+    <li>Scouting notes panel: entity and policy exist; add a hook mirroring <code>usePredictions.ts</code>.</li>
+    <li>Settle predictions: a Fabric User Data Function triggered on the period-2 Half End event writes <code>points</code>.</li>
+    <li>Pass network panel: <code>passNetworkDax</code> is ready in <code>src/data/queries.ts</code>.</li>
+    <li>Second match: download any StatsBomb events file into <code>ingest/data/</code>; the match id comes from the file name.</li>
+  </ul>
+</section>
+
+<footer>
+  Match data: StatsBomb open data, non-commercial use with attribution. Query transport code adapted from the MIT-licensed Helsinki Public Transport template in microsoft/awesome-rayfin. Rayfin is in preview; CLI subcommands may differ between versions, so <code>npx rayfin --help</code> is the authority.
+</footer>
+</div>

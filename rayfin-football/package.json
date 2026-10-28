@@ -1,0 +1,48 @@
+{
+  "name": "rayfin-football",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Football match centre as a Fabric App (Rayfin) - live events replayed into a Real-Time Intelligence Eventhouse, predictions and scouting notes in the Rayfin data service.",
+  "template": {
+    "name": "rayfin-football",
+    "displayName": "Football Match Centre",
+    "category": "real-time",
+    "description": "Live football analytics over a Fabric Eventhouse - xG race, momentum, shot map and pass network from a replayed StatsBomb match, with user predictions and scouting notes persisted in Rayfin"
+  },
+  "scripts": {
+    "predev": "rayfin env --framework vite",
+    "prebuild": "rayfin env --framework vite",
+    "dev": "rayfin up --exclude-services staticHosting && vite",
+    "build": "tsc -b && vite build",
+    "build:fabric": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "rayfin:up": "rayfin up",
+    "replay": "python3 ingest/replay_match.py --events ingest/data/events_69299.json --speed 10",
+    "replay:dry": "python3 ingest/replay_match.py --events ingest/data/events_69299.json --dry-run --limit 50"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^5.17.3",
+    "@microsoft/rayfin-auth-provider-fabric": "1.36.2",
+    "@microsoft/rayfin-client": "1.36.2",
+    "@microsoft/rayfin-connector-fabric-semanticmodel": "1.36.2",
+    "@microsoft/rayfin-core": "1.36.2",
+    "@tailwindcss/vite": "^4.1.11",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@microsoft/rayfin-cli": "1.36.2",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react-swc": "^4.2.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "typescript": "~5.8.3",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.4"
+  }
+}

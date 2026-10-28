@@ -1,0 +1,16 @@
+{
+  "deployments": {
+    "football-match-centre": {
+      "fabricItemId": "86e9bbfc-b51b-4c95-b240-4dd331de5334",
+      "itemName": "rayfin-football",
+      "fabricApiUrl": "https://b2291d11c4804312bad97854ae11055a.pbidedicated.windows.net/webapi/capacities/b2291d11-c480-4312-bad9-7854ae11055a/workloads/BaaS/BaaSService/automatic/v1/workspaces/634ae5d0-ab9a-4462-bc5e-dfeb2c732588/appbackends/86e9bbfc-b51b-4c95-b240-4dd331de5334/",
+      "fabricWorkspaceId": "634ae5d0-ab9a-4462-bc5e-dfeb2c732588",
+      "fabricTenantId": "8696b8df-78d9-467c-a349-818a1f87bfd3",
+      "publishableKey": "pk-ylwQXarVxPgAGBVzERy7",
+      "hostingUrl": "https://close-fog-0a7a952493-westeurope.webapp.fabricapps.net",
+      "fabricDeepLink": "https://app.fabric.microsoft.com/groups/634ae5d0-ab9a-4462-bc5e-dfeb2c732588/appbackends/86e9bbfc-b51b-4c95-b240-4dd331de5334?ctid=8696b8df-78d9-467c-a349-818a1f87bfd3",
+      "deployedAt": "2026-10-28T10:14:57.808Z"
+    }
+  },
+  "active": "football-match-centre"
+}

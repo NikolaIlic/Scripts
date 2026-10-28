@@ -1,0 +1,16 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+ref table Matches
+ref table Scoreline
+ref table XgRace
+ref table Momentum
+ref table ShotMap
+ref table PassNetwork
+ref table PlayerStats
+ref table KeyMoments

@@ -1,0 +1,190 @@
+// KQL database schema for the Rayfin football match centre.
+//
+// Paste this whole file into a KQL queryset on the database, put the cursor anywhere
+// inside it (or select all) and press Run. It is ONE command: .execute database script
+// runs every command below in order and returns one row per command with its result.
+// Safe to re-run: every command is create-merge / create-or-alter.
+//
+// Flow: Eventstream -> raw_events (dynamic) -> update policy -> match_events (typed)
+//       match_events -> MatchCentre functions used by the semantic model
+//
+// Note: no comments inside the script block below; the script runner does not accept them.
+
+.execute database script with (ContinueOnErrors = false) <|
+.create-merge table raw_events (match_id: long, emitted_at: datetime, content: dynamic)
+.create-or-alter table raw_events ingestion json mapping "raw_events_mapping" '[{"column":"match_id","path":"$.match_id","datatype":"long"},{"column":"emitted_at","path":"$.emitted_at","datatype":"datetime"},{"column":"content","path":"$.content","datatype":"dynamic"}]'
+.create-merge table match_events (match_id: long, emitted_at: datetime, event_id: string, event_index: int, period: int, minute: int, second: int, match_clock: timespan, event_type: string, team_id: long, team: string, possession_team: string, player_id: long, player: string, position: string, play_pattern: string, under_pressure: bool, x: real, y: real, end_x: real, end_y: real, outcome: string, body_part: string, xg: real, shot_type: string, technique: string, is_goal: bool, recipient_id: long, recipient: string, pass_length: real, pass_angle: real, pass_height: string, pass_type: string, is_cross: bool, is_through_ball: bool, is_assist: bool, is_key_pass: bool, card_type: string, replacement: string, duel_type: string, gk_type: string)
+.create-or-alter function with (folder = "UpdatePolicyFunctions", docstring = "Flattens raw_events.content into match_events", skipvalidation = "true") Parse_Match_Events() {
+    raw_events
+    | project
+        match_id,
+        emitted_at,
+        event_id        = tostring(content["event_id"]),
+        event_index     = toint(content["index"]),
+        period          = toint(content["period"]),
+        minute          = toint(content["minute"]),
+        second          = toint(content["second"]),
+        match_clock     = totimespan(tostring(content["match_clock"])),
+        event_type      = tostring(content["type"]),
+        team_id         = tolong(content["team_id"]),
+        team            = tostring(content["team"]),
+        possession_team = tostring(content["possession_team"]),
+        player_id       = tolong(content["player_id"]),
+        player          = tostring(content["player"]),
+        position        = tostring(content["position"]),
+        play_pattern    = tostring(content["play_pattern"]),
+        under_pressure  = tobool(content["under_pressure"]),
+        x               = toreal(content["x"]),
+        y               = toreal(content["y"]),
+        end_x           = toreal(content["end_x"]),
+        end_y           = toreal(content["end_y"]),
+        outcome         = tostring(content["outcome"]),
+        body_part       = tostring(content["body_part"]),
+        xg              = toreal(content["xg"]),
+        shot_type       = tostring(content["shot_type"]),
+        technique       = tostring(content["technique"]),
+        is_goal         = tobool(content["is_goal"]),
+        recipient_id    = tolong(content["recipient_id"]),
+        recipient       = tostring(content["recipient"]),
+        pass_length     = toreal(content["pass_length"]),
+        pass_angle      = toreal(content["pass_angle"]),
+        pass_height     = tostring(content["pass_height"]),
+        pass_type       = tostring(content["pass_type"]),
+        is_cross        = tobool(content["is_cross"]),
+        is_through_ball = tobool(content["is_through_ball"]),
+        is_assist       = tobool(content["is_assist"]),
+        is_key_pass     = tobool(content["is_key_pass"]),
+        card_type       = tostring(content["card"]),
+        replacement     = tostring(content["replacement"]),
+        duel_type       = tostring(content["duel_type"]),
+        gk_type         = tostring(content["gk_type"])
+}
+.alter table match_events policy update @'[{"IsEnabled": true, "Source": "raw_events", "Query": "Parse_Match_Events()", "IsTransactional": true, "PropagateIngestionProperties": false}]'
+.alter-merge table raw_events policy retention softdelete = 7d
+.alter table raw_events policy ingestionbatching '{"MaximumBatchingTimeSpan":"00:00:10","MaximumNumberOfItems":500,"MaximumRawDataSizeMB":100}'
+.create-or-alter function with (folder = "MatchCentre", docstring = "Score, shots, xG, passes and cards per team, plus clock data: match second of the latest event, when it was sent, replay speed and whether the period has ended") Scoreline(matchId: long) {
+    let matchEv = match_events | where match_id == matchId;
+    let lastEv = matchEv | summarize arg_max(emitted_at, period, minute, second, event_type);
+    let currentPeriod = toscalar(lastEv | project period);
+    let paceEv = matchEv
+        | where period == currentPeriod
+        | extend match_s = minute * 60 + second
+        | summarize s0 = min(match_s), s1 = max(match_s), t0 = min(emitted_at), t1 = max(emitted_at)
+        | project speed = iff(t1 - t0 > 1s, todouble(s1 - s0) / ((t1 - t0) / 1s), 1.0);
+    let clockText = toscalar(lastEv | project strcat(minute, "'"));
+    let clockSeconds = toscalar(lastEv | project minute * 60 + second);
+    let lastEventAt = toscalar(lastEv | project emitted_at);
+    let periodOver = toscalar(lastEv | project event_type == "Half End");
+    let replaySpeed = toscalar(paceEv | project round(speed, 2));
+    matchEv
+    | summarize
+        goals        = countif(event_type == "Shot" and is_goal),
+        shots        = countif(event_type == "Shot"),
+        shots_on_t   = countif(event_type == "Shot" and outcome in ("Goal", "Saved", "Saved To Post")),
+        xg           = round(sumif(xg, event_type == "Shot"), 2),
+        passes       = countif(event_type == "Pass"),
+        passes_ok    = countif(event_type == "Pass" and outcome == "Complete"),
+        yellow_cards = countif(card_type == "Yellow Card"),
+        red_cards    = countif(card_type in ("Red Card", "Second Yellow"))
+        by team_id, team
+    | extend pass_pct = round(100.0 * passes_ok / iff(passes == 0, 1, passes), 1),
+             clock = clockText, clock_seconds = tolong(clockSeconds), last_event_at = lastEventAt,
+             replay_speed = todouble(replaySpeed), period = toint(currentPeriod), period_over = tobool(periodOver)
+    | project team_id, team, goals, shots, shots_on_t, xg, passes, pass_pct, yellow_cards, red_cards,
+              clock, clock_seconds, last_event_at, replay_speed, period, period_over
+}
+.create-or-alter function with (folder = "MatchCentre", docstring = "Cumulative xG and goals per team by minute") XgRace(matchId: long) {
+    match_events
+    | where match_id == matchId and event_type == "Shot"
+    | summarize xg_in_minute = sum(xg), goals_in_minute = countif(is_goal) by team, minute
+    | order by team asc, minute asc
+    | extend cum_xg = row_cumsum(xg_in_minute, team != prev(team)),
+             cum_goals = row_cumsum(goals_in_minute, team != prev(team))
+    | project team, minute, cum_xg = round(cum_xg, 3), cum_goals
+}
+.create-or-alter function with (folder = "MatchCentre", docstring = "Rolling momentum per team and minute over a window of windowMinutes") Momentum(matchId: long, windowMinutes: int = 5) {
+    let maxMinute = toint(toscalar(match_events | where match_id == matchId | summarize max(minute)));
+    let scored =
+        match_events
+        | where match_id == matchId
+        | summarize
+            shot_xg            = sumif(xg, event_type == "Shot"),
+            final_third_passes = countif(event_type == "Pass" and outcome == "Complete" and end_x >= 80),
+            box_entries        = countif(event_type == "Pass" and outcome == "Complete" and end_x >= 102 and end_y between (18.0 .. 62.0))
+            by team, minute
+        | extend score = coalesce(shot_xg, 0.0) * 10 + final_third_passes * 0.5 + box_entries * 1.5;
+    let rolled =
+        scored
+        | extend target = range(minute, minute + windowMinutes - 1, 1)
+        | mv-expand target to typeof(int)
+        | where target <= maxMinute
+        | summarize momentum = round(sum(score), 2) by team, minute = target;
+    match_events
+    | where match_id == matchId
+    | distinct team
+    | extend minute = range(0, maxMinute, 1)
+    | mv-expand minute to typeof(int)
+    | join kind=leftouter rolled on team, minute
+    | project team, minute, momentum = coalesce(momentum, 0.0)
+    | order by team asc, minute asc
+}
+.create-or-alter function with (folder = "MatchCentre", docstring = "All shots with pitch coordinates and xG") ShotMap(matchId: long) {
+    match_events
+    | where match_id == matchId and event_type == "Shot"
+    | project minute, second, team, player, x, y, end_x, end_y, xg = round(xg, 3), outcome, body_part, shot_type, is_goal, play_pattern
+    | order by minute asc, second asc
+}
+.create-or-alter function with (folder = "MatchCentre", docstring = "Completed passes player to recipient with average positions, for every team") PassNetwork(matchId: long, minPasses: int = 3) {
+    let positions =
+        match_events
+        | where match_id == matchId and isnotempty(player)
+        | where event_type in ("Pass", "Ball Recovery", "Dribble", "Shot", "Duel", "Interception", "Clearance")
+        | summarize avg_x = round(avg(x), 1), avg_y = round(avg(y), 1), touches = count() by team, player;
+    match_events
+    | where match_id == matchId and event_type == "Pass" and outcome == "Complete" and isnotempty(recipient)
+    | summarize passes = count(), avg_length = round(avg(pass_length), 1) by team, player, recipient
+    | where passes >= minPasses
+    | join kind=inner (positions | project team, player, from_x = avg_x, from_y = avg_y, from_touches = touches) on team, player
+    | join kind=inner (positions | project team, recipient = player, to_x = avg_x, to_y = avg_y) on team, recipient
+    | project team, player, recipient, passes, avg_length, from_x, from_y, from_touches, to_x, to_y
+    | order by team asc, passes desc
+}
+.create-or-alter function with (folder = "MatchCentre", docstring = "Per-player counts for the live leaderboard") PlayerStats(matchId: long) {
+    match_events
+    | where match_id == matchId and isnotempty(player)
+    | summarize
+        touches            = countif(event_type in ("Pass", "Ball Recovery", "Dribble", "Shot", "Clearance", "Interception")),
+        passes             = countif(event_type == "Pass"),
+        passes_complete    = countif(event_type == "Pass" and outcome == "Complete"),
+        progressive_passes = countif(event_type == "Pass" and outcome == "Complete" and end_x - x >= 10 and end_x >= 60),
+        key_passes         = countif(is_key_pass),
+        assists            = countif(is_assist),
+        shots              = countif(event_type == "Shot"),
+        goals              = countif(is_goal),
+        xg                 = round(sumif(xg, event_type == "Shot"), 2),
+        dribbles_won       = countif(event_type == "Dribble" and outcome == "Complete"),
+        recoveries         = countif(event_type == "Ball Recovery"),
+        fouls              = countif(event_type == "Foul Committed")
+        by team, player
+    | extend pass_pct = round(100.0 * passes_complete / iff(passes == 0, 1, passes), 1)
+    | order by touches desc
+}
+.create-or-alter function with (folder = "MatchCentre", docstring = "Key moments feed, newest first") KeyMoments(matchId: long, maxRows: int = 50) {
+    match_events
+    | where match_id == matchId
+    | where event_type in ("Shot", "Substitution", "Half Start", "Half End") or isnotempty(card_type) or is_key_pass
+    | extend headline = case(
+          is_goal, strcat("GOAL  ", player, " (", team, ")"),
+          event_type == "Shot", strcat("Shot ", tolower(outcome), "  ", player, "  xG ", round(xg, 2)),
+          isnotempty(card_type), strcat(card_type, "  ", player),
+          event_type == "Substitution", strcat("Sub  ", player, " off, ", replacement, " on"),
+          is_key_pass, strcat("Key pass  ", player, " to ", recipient),
+          event_type)
+    | project emitted_at, period, minute, second, team, headline, event_type
+    | order by period desc, minute desc, second desc
+    | take maxRows
+}
+.create-or-alter materialized-view match_latest on table match_events {
+    match_events
+    | summarize arg_max(emitted_at, period, minute, second, event_type) by match_id
+}

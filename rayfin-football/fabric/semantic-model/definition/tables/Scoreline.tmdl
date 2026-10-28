@@ -1,0 +1,147 @@
+table Scoreline
+
+	column team_id
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: team_id
+
+		annotation SummarizationSetBy = User
+
+	column team
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: team
+
+		annotation SummarizationSetBy = User
+
+	column goals
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: goals
+
+		annotation SummarizationSetBy = User
+
+	column shots
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: shots
+
+		annotation SummarizationSetBy = User
+
+	column shots_on_t
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: shots_on_t
+
+		annotation SummarizationSetBy = User
+
+	column xg
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: xg
+
+		annotation SummarizationSetBy = User
+
+	column passes
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: passes
+
+		annotation SummarizationSetBy = User
+
+	column pass_pct
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: pass_pct
+
+		annotation SummarizationSetBy = User
+
+	column yellow_cards
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: yellow_cards
+
+		annotation SummarizationSetBy = User
+
+	column red_cards
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: red_cards
+
+		annotation SummarizationSetBy = User
+
+	column clock
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: clock
+
+		annotation SummarizationSetBy = User
+
+	column clock_seconds
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: clock_seconds
+
+		annotation SummarizationSetBy = User
+
+	column last_event_at
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		summarizeBy: none
+		sourceColumn: last_event_at
+
+		annotation SummarizationSetBy = User
+
+	column replay_speed
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: replay_speed
+
+		annotation SummarizationSetBy = User
+
+	column period
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		summarizeBy: none
+		sourceColumn: period
+
+		annotation SummarizationSetBy = User
+
+	column period_over
+		dataType: boolean
+		sourceProviderType: bit
+		summarizeBy: none
+		sourceColumn: period_over
+
+		annotation SummarizationSetBy = User
+
+	partition Scoreline = m
+		mode: directQuery
+		source =
+				let
+				    Source = AzureDataExplorer.Contents("https://<eventhouse>.kusto.fabric.microsoft.com", "00000000-0000-0000-0000-000000000000", "Scoreline(" & Number.ToText(Match_Id) & ")", [MaxRows=null, MaxSize=null, NoTruncate=null, AdditionalSetStatements=null])
+				in
+				    Source

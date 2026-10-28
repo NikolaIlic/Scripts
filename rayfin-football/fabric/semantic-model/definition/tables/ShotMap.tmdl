@@ -1,0 +1,123 @@
+table ShotMap
+
+	column minute
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		summarizeBy: none
+		sourceColumn: minute
+
+		annotation SummarizationSetBy = User
+
+	column second
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		summarizeBy: none
+		sourceColumn: second
+
+		annotation SummarizationSetBy = User
+
+	column team
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: team
+
+		annotation SummarizationSetBy = User
+
+	column player
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: player
+
+		annotation SummarizationSetBy = User
+
+	column x
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: x
+
+		annotation SummarizationSetBy = User
+
+	column y
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: y
+
+		annotation SummarizationSetBy = User
+
+	column end_x
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: end_x
+
+		annotation SummarizationSetBy = User
+
+	column end_y
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: end_y
+
+		annotation SummarizationSetBy = User
+
+	column xg
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: xg
+
+		annotation SummarizationSetBy = User
+
+	column outcome
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: outcome
+
+		annotation SummarizationSetBy = User
+
+	column body_part
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: body_part
+
+		annotation SummarizationSetBy = User
+
+	column shot_type
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: shot_type
+
+		annotation SummarizationSetBy = User
+
+	column is_goal
+		dataType: boolean
+		sourceProviderType: bit
+		summarizeBy: none
+		sourceColumn: is_goal
+
+		annotation SummarizationSetBy = User
+
+	column play_pattern
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: play_pattern
+
+		annotation SummarizationSetBy = User
+
+	partition ShotMap = m
+		mode: directQuery
+		source =
+				let
+				    Source = AzureDataExplorer.Contents("https://<eventhouse>.kusto.fabric.microsoft.com", "00000000-0000-0000-0000-000000000000", "ShotMap(" & Number.ToText(Match_Id) & ")", [MaxRows=null, MaxSize=null, NoTruncate=null, AdditionalSetStatements=null])
+				in
+				    Source

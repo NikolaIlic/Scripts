@@ -1,0 +1,140 @@
+table PlayerStats
+
+	column team
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: team
+
+		annotation SummarizationSetBy = User
+
+	column player
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: player
+
+		annotation SummarizationSetBy = User
+
+	column touches
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: touches
+
+		annotation SummarizationSetBy = User
+
+	column passes
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: passes
+
+		annotation SummarizationSetBy = User
+
+	column passes_complete
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: passes_complete
+
+		annotation SummarizationSetBy = User
+
+	column progressive_passes
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: progressive_passes
+
+		annotation SummarizationSetBy = User
+
+	column key_passes
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: key_passes
+
+		annotation SummarizationSetBy = User
+
+	column assists
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: assists
+
+		annotation SummarizationSetBy = User
+
+	column shots
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: shots
+
+		annotation SummarizationSetBy = User
+
+	column goals
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: goals
+
+		annotation SummarizationSetBy = User
+
+	column xg
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: xg
+
+		annotation SummarizationSetBy = User
+
+	column dribbles_won
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: dribbles_won
+
+		annotation SummarizationSetBy = User
+
+	column recoveries
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: recoveries
+
+		annotation SummarizationSetBy = User
+
+	column fouls
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		summarizeBy: none
+		sourceColumn: fouls
+
+		annotation SummarizationSetBy = User
+
+	column pass_pct
+		dataType: double
+		sourceProviderType: float
+		summarizeBy: none
+		sourceColumn: pass_pct
+
+		annotation SummarizationSetBy = User
+
+	partition PlayerStats = m
+		mode: directQuery
+		source =
+				let
+				    Source = AzureDataExplorer.Contents("https://<eventhouse>.kusto.fabric.microsoft.com", "00000000-0000-0000-0000-000000000000", "PlayerStats(" & Number.ToText(Match_Id) & ")", [MaxRows=null, MaxSize=null, NoTruncate=null, AdditionalSetStatements=null])
+				in
+				    Source

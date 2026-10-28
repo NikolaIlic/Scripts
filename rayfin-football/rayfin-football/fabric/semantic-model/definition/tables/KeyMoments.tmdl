@@ -1,0 +1,69 @@
+table KeyMoments
+
+	column emitted_at
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		summarizeBy: none
+		sourceColumn: emitted_at
+
+		annotation SummarizationSetBy = User
+
+	column period
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		summarizeBy: none
+		sourceColumn: period
+
+		annotation SummarizationSetBy = User
+
+	column minute
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		summarizeBy: none
+		sourceColumn: minute
+
+		annotation SummarizationSetBy = User
+
+	column second
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		summarizeBy: none
+		sourceColumn: second
+
+		annotation SummarizationSetBy = User
+
+	column team
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: team
+
+		annotation SummarizationSetBy = User
+
+	column headline
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: headline
+
+		annotation SummarizationSetBy = User
+
+	column event_type
+		dataType: string
+		sourceProviderType: nvarchar(max)
+		summarizeBy: none
+		sourceColumn: event_type
+
+		annotation SummarizationSetBy = User
+
+	partition KeyMoments = m
+		mode: directQuery
+		source =
+				let
+				    Source = AzureDataExplorer.Contents("https://<eventhouse>.kusto.fabric.microsoft.com", "00000000-0000-0000-0000-000000000000", "KeyMoments(" & Number.ToText(Match_Id) & ")", [MaxRows=null, MaxSize=null, NoTruncate=null, AdditionalSetStatements=null])
+				in
+				    Source

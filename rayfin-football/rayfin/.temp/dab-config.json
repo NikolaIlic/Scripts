@@ -1,0 +1,239 @@
+{
+  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v1.5.56/dab.draft.schema.json",
+  "entities": {
+    "WatchedMatch": {
+      "source": "WatchedMatches",
+      "permissions": [
+        {
+          "role": "authenticated",
+          "actions": [
+            "create",
+            "read",
+            "update"
+          ]
+        }
+      ],
+      "x-schema": {
+        "fields": {
+          "id": {
+            "dbType": "UNIQUEIDENTIFIER",
+            "nullable": false
+          },
+          "match_id": {
+            "dbType": "INT",
+            "nullable": false
+          },
+          "competition": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          },
+          "season": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          },
+          "home_team": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          },
+          "away_team": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          },
+          "played_on": {
+            "dbType": "DATETIME2",
+            "nullable": false
+          },
+          "replay_at": {
+            "dbType": "DATETIME2",
+            "nullable": true
+          },
+          "is_live": {
+            "dbType": "BIT",
+            "nullable": false
+          },
+          "is_finished": {
+            "dbType": "BIT",
+            "nullable": false
+          },
+          "final_home_goals": {
+            "dbType": "INT",
+            "nullable": true
+          },
+          "final_away_goals": {
+            "dbType": "INT",
+            "nullable": true
+          }
+        },
+        "constraints": {
+          "primaryKey": {
+            "name": "PK_WatchedMatches",
+            "columns": [
+              "id"
+            ]
+          }
+        }
+      }
+    },
+    "ScoutingNote": {
+      "source": "ScoutingNotes",
+      "permissions": [
+        {
+          "role": "authenticated",
+          "actions": [
+            {
+              "action": "*",
+              "policy": {
+                "database": "@claims.sub eq @item.user_id"
+              }
+            }
+          ]
+        }
+      ],
+      "x-schema": {
+        "fields": {
+          "id": {
+            "dbType": "UNIQUEIDENTIFIER",
+            "nullable": false
+          },
+          "match_id": {
+            "dbType": "INT",
+            "nullable": false
+          },
+          "player_id": {
+            "dbType": "INT",
+            "nullable": true
+          },
+          "player": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": true
+          },
+          "team": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          },
+          "minute": {
+            "dbType": "INT",
+            "nullable": false
+          },
+          "event_id": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": true
+          },
+          "tag": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": true
+          },
+          "rating": {
+            "dbType": "INT",
+            "nullable": true
+          },
+          "body": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          },
+          "author": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          },
+          "createdAt": {
+            "dbType": "DATETIME2",
+            "nullable": false
+          },
+          "user_id": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          }
+        },
+        "constraints": {
+          "primaryKey": {
+            "name": "PK_ScoutingNotes",
+            "columns": [
+              "id"
+            ]
+          }
+        }
+      }
+    },
+    "Prediction": {
+      "source": "Predictions",
+      "permissions": [
+        {
+          "role": "authenticated",
+          "actions": [
+            {
+              "action": "create",
+              "policy": {
+                "database": "@claims.sub eq @item.user_id"
+              }
+            },
+            {
+              "action": "update",
+              "policy": {
+                "database": "@claims.sub eq @item.user_id"
+              }
+            },
+            {
+              "action": "delete",
+              "policy": {
+                "database": "@claims.sub eq @item.user_id"
+              }
+            },
+            "read"
+          ]
+        }
+      ],
+      "x-schema": {
+        "fields": {
+          "id": {
+            "dbType": "UNIQUEIDENTIFIER",
+            "nullable": false
+          },
+          "match_id": {
+            "dbType": "INT",
+            "nullable": false
+          },
+          "home_goals": {
+            "dbType": "INT",
+            "nullable": false
+          },
+          "away_goals": {
+            "dbType": "INT",
+            "nullable": false
+          },
+          "first_scorer": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": true
+          },
+          "points": {
+            "dbType": "INT",
+            "nullable": true
+          },
+          "locked": {
+            "dbType": "BIT",
+            "nullable": false
+          },
+          "author": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          },
+          "createdAt": {
+            "dbType": "DATETIME2",
+            "nullable": false
+          },
+          "user_id": {
+            "dbType": "NVARCHAR(MAX)",
+            "nullable": false
+          }
+        },
+        "constraints": {
+          "primaryKey": {
+            "name": "PK_Predictions",
+            "columns": [
+              "id"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
